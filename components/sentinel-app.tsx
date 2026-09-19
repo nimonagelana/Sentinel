@@ -69,7 +69,7 @@ export function SentinelApp() {
       </section>
 
       <aside className="situation-panel glass-panel">
-        <div className="panel-kicker"><span className="amber-dot" /> EMERGING SITUATION <span className="panel-id">SIT-0042 <ArrowUpRight size={12} /></span></div>
+        <div className="panel-kicker"><span className="amber-dot" /> EMERGING SITUATION <span className="panel-id">{selectedSignal} <ArrowUpRight size={12} /></span></div>
         <div className="panel-heading"><div><h2>Coastal Corridor</h2><p>UNDER REVIEW <span>•</span> 18 MINUTES</p></div><div className="confidence">0.68<small>CONFIDENCE</small></div></div>
         <div className="telemetry-grid">{[['10','SIGNALS'],['4','SOURCES'],['01','VERIFIED']].map(([value, label]) => <div key={label}><strong>{value}</strong><span>{label}</span></div>)}</div>
         <div className="section-rule" />
