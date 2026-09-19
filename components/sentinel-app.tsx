@@ -22,6 +22,10 @@ interface Signal {
   status: SignalStatus
 }
 
+interface SubmittedReport extends Signal {
+  receivedAt: string
+}
+
 interface Situation {
   id: string
   name: string
@@ -285,13 +289,58 @@ const stages = [
 
 export function SentinelApp() {
   const [selectedSignal, setSelectedSignal] = useState('SIG-07')
-  const [view, setView] = useState<'field' | 'verification' | 'response' | 'timeline'>('field')
+  const [view, setView] = useState<'field' | 'signals' | 'situations' | 'verification' | 'response' | 'timeline'>('field')
   const [stage, setStage] = useState(4)
   const [showReport, setShowReport] = useState(false)
+  const [navOpen, setNavOpen] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [reportObservation, setReportObservation] = useState('')
+  const [reportLocation, setReportLocation] = useState('')
+  const [reportWhen, setReportWhen] = useState('')
+  const [submittedReports, setSubmittedReports] = useState<SubmittedReport[]>(() => {
+    if (typeof window === 'undefined') return []
+    try {
+      return JSON.parse(window.localStorage.getItem('sentinel-reports') ?? '[]')
+    } catch {
+      return []
+    }
+  })
 
-  const selectedSignalData = signals.find((s) => s.id === selectedSignal)
-  const independentCount = signals.filter((s) => s.isIndependent).length
+  const allSignals = [...signals, ...submittedReports]
+  const selectedSignalData = allSignals.find((s) => s.id === selectedSignal)
+  const independentCount = allSignals.filter((s) => s.isIndependent).length
+  const verifiedSignals = allSignals.filter((s) => s.status === 'VERIFIED')
+
+  function resetReportForm() {
+    setSubmitted(false)
+    setReportObservation('')
+    setReportLocation('')
+    setReportWhen('')
+  }
+
+  function submitReport() {
+    const id = `SIG-${String(Date.now()).slice(-6)}`
+    const report: SubmittedReport = {
+      id,
+      x: 50,
+      y: 50,
+      tone: 'amber',
+      label: 'submitted report',
+      observation: reportObservation.trim() || 'Civilian observation submitted',
+      location: reportLocation.trim() || 'Location not provided',
+      timestamp: reportWhen.trim() || 'Just now',
+      sourceType: 'civilian',
+      isIndependent: true,
+      relatedSignals: [],
+      status: 'REPORTED',
+      receivedAt: new Date().toISOString(),
+    }
+    const nextReports = [...submittedReports, report]
+    setSubmittedReports(nextReports)
+    window.localStorage.setItem('sentinel-reports', JSON.stringify(nextReports))
+    setSelectedSignal(id)
+    setSubmitted(true)
+  }
 
   return (
     <main className="sentinel-shell">
@@ -308,27 +357,27 @@ export function SentinelApp() {
           <span className="live-dot" />
           LIVE SYSTEM <span className="meta-divider" /> UTC 14:32:08
         </div>
-        <button className="icon-button mobile-menu" aria-label="Open navigation">
+        <button className="icon-button mobile-menu" aria-label="Open navigation" aria-expanded={navOpen} onClick={() => setNavOpen((open) => !open)}>
           <Menu size={18} />
         </button>
-        <nav>
+        <nav className={navOpen ? 'mobile-nav-open' : ''}>
           <button
-            className={view === 'field' ? 'nav-active' : ''}
-            onClick={() => setView('field')}
+            className={view === 'signals' ? 'nav-active' : ''}
+            onClick={() => setView('signals')}
           >
-            FIELD
+            SIGNALS
+          </button>
+          <button
+            className={view === 'situations' ? 'nav-active' : ''}
+            onClick={() => setView('situations')}
+          >
+            SITUATIONS
           </button>
           <button
             className={view === 'verification' ? 'nav-active' : ''}
             onClick={() => setView('verification')}
           >
-            VERIFY
-          </button>
-          <button
-            className={view === 'response' ? 'nav-active' : ''}
-            onClick={() => setView('response')}
-          >
-            RESPOND
+            VERIFIED
           </button>
           <button
             className={view === 'timeline' ? 'nav-active' : ''}
@@ -401,7 +450,7 @@ export function SentinelApp() {
                 <circle cx="60" cy="43" r=".8" />
                 <circle cx="64" cy="52" r=".8" />
               </g>
-              {signals.map((signal) => (
+              {allSignals.map((signal) => (
                 <g
                   key={signal.id}
                   className={`signal signal-${signal.tone} ${selectedSignal === signal.id ? 'is-selected' : ''}`}
@@ -514,6 +563,27 @@ export function SentinelApp() {
             </button>
           </aside>
         </>
+      )}
+
+      {view === 'signals' && (
+        <section className="verification-workspace glass-panel">
+          <div className="workspace-header"><h2>REPORTS / SIGNALS</h2><p>Individual observations recorded in the signal field</p></div>
+          <div className="evidence-list">
+            {allSignals.map((signal) => (
+              <button key={signal.id} className="evidence-item" onClick={() => { setSelectedSignal(signal.id); setView('field') }}>
+                <Radio size={14} className="check-icon" /><span><strong>{signal.id}</strong> — {signal.observation}<br /><small>{signal.location} · {signal.timestamp} · {signal.status}</small></span>
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {view === 'situations' && (
+        <section className="verification-workspace glass-panel">
+          <div className="workspace-header"><h2>SITUATIONS</h2><p>Connected signals forming an emerging situation</p></div>
+          <div className="summary-box"><div className="summary-item"><span className="label">{situation.id}</span><span className="value">{situation.name}</span></div><div className="summary-item"><span className="label">Status:</span><span className="value status-verified">{situation.status}</span></div><div className="summary-item"><span className="label">Signals:</span><span className="value">{allSignals.length}</span></div></div>
+          <button className="verify-button" onClick={() => setView('verification')}><ShieldCheck size={15} /> VIEW VERIFIED INFORMATION <ChevronRight size={15} /></button>
+        </section>
       )}
 
       {view === 'verification' && (
@@ -712,6 +782,9 @@ export function SentinelApp() {
             </button>
           ))}
         </div>
+        <button className="verify-button" onClick={() => { setSelectedSignal(verifiedSignals[0]?.id ?? 'SIG-21'); setView('signals') }}>
+          <Eye size={15} /> OBSERVE YOUR VERIFIED REPORT SIGNAL <ChevronRight size={15} />
+        </button>
       </section>
 
       <footer className="footer">
@@ -745,7 +818,7 @@ export function SentinelApp() {
               className="close-button"
               onClick={() => {
                 setShowReport(false)
-                setSubmitted(false)
+                resetReportForm()
               }}
               aria-label="Close report"
             >
@@ -761,7 +834,7 @@ export function SentinelApp() {
                 </div>
                 <h2 id="report-title">Your observation is now part of the trail.</h2>
                 <p>
-                  Signal ID <strong>SIG-8841-A</strong>
+                  Signal ID <strong>{submittedReports[submittedReports.length - 1]?.id}</strong>
                   <br />
                   Received 19 Sep 2026, 14:32 UTC
                 </p>
@@ -789,19 +862,19 @@ export function SentinelApp() {
                 </p>
                 <label>
                   OBSERVATION
-                  <textarea placeholder="Describe what you saw, heard, or experienced..." />
+                  <textarea value={reportObservation} onChange={(event) => setReportObservation(event.target.value)} placeholder="Describe what you saw, heard, or experienced..." />
                 </label>
                 <div className="form-row">
                   <label>
                     APPROXIMATE LOCATION
-                    <input placeholder="Place or coordinates" />
+                          <input value={reportLocation} onChange={(event) => setReportLocation(event.target.value)} placeholder="Place or coordinates" />
                   </label>
                   <label>
                     WHEN
-                    <input placeholder="Date / time" />
+                          <input value={reportWhen} onChange={(event) => setReportWhen(event.target.value)} placeholder="Date / time" />
                   </label>
                 </div>
-                <button className="verify-button" onClick={() => setSubmitted(true)}>
+                <button className="verify-button" onClick={submitReport}>
                   <Radio size={15} /> SUBMIT OBSERVATION <ArrowUpRight size={15} />
                 </button>
                 <p className="privacy-note">
