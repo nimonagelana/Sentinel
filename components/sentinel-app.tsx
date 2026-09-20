@@ -290,6 +290,7 @@ const stages = [
 export function SentinelApp() {
   const [selectedSignal, setSelectedSignal] = useState('SIG-07')
   const [view, setView] = useState<'field' | 'signals' | 'situations' | 'verification' | 'response' | 'timeline'>('field')
+  const [previousView, setPreviousView] = useState<typeof view>('field')
   const [stage, setStage] = useState(4)
   const [showReport, setShowReport] = useState(false)
   const [navOpen, setNavOpen] = useState(false)
@@ -310,6 +311,12 @@ export function SentinelApp() {
   const selectedSignalData = allSignals.find((s) => s.id === selectedSignal)
   const independentCount = allSignals.filter((s) => s.isIndependent).length
   const verifiedSignals = allSignals.filter((s) => s.status === 'VERIFIED')
+
+  function navigateTo(nextView: typeof view) {
+    setPreviousView(view)
+    setView(nextView)
+    setNavOpen(false)
+  }
 
   function resetReportForm() {
     setSubmitted(false)
@@ -360,31 +367,13 @@ export function SentinelApp() {
         <button className="icon-button mobile-menu" aria-label="Open navigation" aria-expanded={navOpen} onClick={() => setNavOpen((open) => !open)}>
           <Menu size={18} />
         </button>
-        <nav className={navOpen ? 'mobile-nav-open' : ''}>
-          <button
-            className={view === 'signals' ? 'nav-active' : ''}
-            onClick={() => setView('signals')}
-          >
-            SIGNALS
-          </button>
-          <button
-            className={view === 'situations' ? 'nav-active' : ''}
-            onClick={() => setView('situations')}
-          >
-            SITUATIONS
-          </button>
-          <button
-            className={view === 'verification' ? 'nav-active' : ''}
-            onClick={() => setView('verification')}
-          >
-            VERIFIED
-          </button>
-          <button
-            className={view === 'timeline' ? 'nav-active' : ''}
-            onClick={() => setView('timeline')}
-          >
-            TRAIL
-          </button>
+        <nav className={navOpen ? 'mobile-nav-open' : ''} aria-label="Main navigation">
+          <button className={view === 'field' ? 'nav-active' : ''} onClick={() => navigateTo('field')}>DASHBOARD</button>
+          <button className={view === 'signals' ? 'nav-active' : ''} onClick={() => navigateTo('signals')}>SIGNALS</button>
+          <button className={view === 'situations' ? 'nav-active' : ''} onClick={() => navigateTo('situations')}>SITUATIONS</button>
+          <button className={view === 'verification' ? 'nav-active' : ''} onClick={() => navigateTo('verification')}>VERIFIED</button>
+          <button className={view === 'timeline' ? 'nav-active' : ''} onClick={() => navigateTo('timeline')}>TRAIL</button>
+          <button onClick={() => { setShowReport(true); setNavOpen(false) }}>REPORT A SIGNAL</button>
         </nav>
         <button className="report-button" onClick={() => setShowReport(true)}>
           <Radio size={14} /> REPORT A SIGNAL
@@ -567,7 +556,7 @@ export function SentinelApp() {
 
       {view === 'signals' && (
         <section className="verification-workspace glass-panel">
-          <div className="workspace-header"><h2>REPORTS / SIGNALS</h2><p>Individual observations recorded in the signal field</p></div>
+          <div className="workspace-header"><button className="back-button" onClick={() => setView(previousView)} aria-label="Return to previous page">← BACK</button><h2>REPORTS / SIGNALS</h2><p>Individual observations recorded in the signal field</p></div>
           <div className="evidence-list">
             {allSignals.map((signal) => (
               <button key={signal.id} className="evidence-item" onClick={() => { setSelectedSignal(signal.id); setView('field') }}>
@@ -580,7 +569,7 @@ export function SentinelApp() {
 
       {view === 'situations' && (
         <section className="verification-workspace glass-panel">
-          <div className="workspace-header"><h2>SITUATIONS</h2><p>Connected signals forming an emerging situation</p></div>
+          <div className="workspace-header"><button className="back-button" onClick={() => setView(previousView)} aria-label="Return to previous page">← BACK</button><h2>SITUATIONS</h2><p>Connected signals forming an emerging situation</p></div>
           <div className="summary-box"><div className="summary-item"><span className="label">{situation.id}</span><span className="value">{situation.name}</span></div><div className="summary-item"><span className="label">Status:</span><span className="value status-verified">{situation.status}</span></div><div className="summary-item"><span className="label">Signals:</span><span className="value">{allSignals.length}</span></div></div>
           <button className="verify-button" onClick={() => setView('verification')}><ShieldCheck size={15} /> VIEW VERIFIED INFORMATION <ChevronRight size={15} /></button>
         </section>
@@ -589,6 +578,7 @@ export function SentinelApp() {
       {view === 'verification' && (
         <section className="verification-workspace glass-panel">
           <div className="workspace-header">
+            <button className="back-button" onClick={() => setView(previousView)} aria-label="Return to previous page">← BACK</button>
             <h2>VERIFICATION WORKSPACE</h2>
             <p>Review evidence and human verification decision</p>
           </div>
@@ -742,6 +732,7 @@ export function SentinelApp() {
       {view === 'timeline' && (
         <section className="timeline-workspace glass-panel">
           <div className="workspace-header">
+            <button className="back-button" onClick={() => setView(previousView)} aria-label="Return to previous page">← BACK</button>
             <h2>DECISION TRAIL</h2>
             <p>Complete traceable record from signal to outcome</p>
           </div>
@@ -782,7 +773,7 @@ export function SentinelApp() {
             </button>
           ))}
         </div>
-        <button className="verify-button" onClick={() => { setSelectedSignal(verifiedSignals[0]?.id ?? 'SIG-21'); setView('signals') }}>
+        <button className="verify-button" onClick={() => { setSelectedSignal(verifiedSignals[0]?.id ?? 'SIG-21'); setView('field') }}>
           <Eye size={15} /> OBSERVE YOUR VERIFIED REPORT SIGNAL <ChevronRight size={15} />
         </button>
       </section>
