@@ -1,33 +1,211 @@
-# sentinel
+# Sentinel
 
-This is a [Next.js](https://nextjs.org) project bootstrapped with [v0](https://v0.app).
+> **See the signal. Understand the situation.**
 
-## Built with v0
+Sentinel is a civilian early-warning and humanitarian information interface designed to turn scattered reports into a clearer picture of what is happening.
 
-This repository is linked to a [v0](https://v0.app) project. You can continue developing by visiting the link below -- start new chats to make changes, and v0 will push commits directly to this repo. Every merge to `main` will automatically deploy.
+The application brings reported signals, locations, source types, relationships, verification states, and situation timelines into one structured interface. It is designed to help users move from **individual observations → connected signals → understandable situations**.
 
-[Continue working on v0 →](https://v0.app/chat/projects/prj_lXxY0B6HX556D6rnAXYbzYGxIDdb)
+## Overview
+
+Information during a developing situation can arrive as separate observations from different sources. Sentinel provides an interface for organizing those observations and showing how they relate to one another.
+
+The current application models:
+
+* Individual signals and observations
+* Signal locations
+* Source types
+* Related signals
+* Verification states
+* Situation states
+* Evidence and summaries
+* Situation timelines
+
+A signal is not automatically treated as a confirmed situation. Information can remain reported, uncertain, or contradicted as it moves through the verification process.
+
+## Key Features
+
+### Signal Overview
+
+View reported signals in a centralized interface, including their location, observation, source type, timestamp, and current status.
+
+### Signal Relationships
+
+Related signals can be connected to show when multiple observations may describe the same developing situation.
+
+### Verification States
+
+Sentinel distinguishes between different information states:
+
+* **REPORTED**
+* **CORROBORATED**
+* **VERIFIED**
+* **UNCERTAIN**
+* **CONTRADICTED**
+
+This makes the distinction between an initial report and more strongly supported information visible in the interface.
+
+### Situation Tracking
+
+Related signals can be organized into situations with their own status and supporting information.
+
+Situation states include:
+
+* **REPORTED**
+* **UNDER REVIEW**
+* **VERIFIED**
+* **RESOLVED**
+
+### Source Awareness
+
+Signals are modeled according to source type:
+
+* Civilian
+* Health
+* Field
+* Organization
+
+### Timeline and Evidence
+
+Situation information can be presented through timelines and supporting evidence, helping users understand how a situation develops rather than viewing reports as isolated entries.
+
+### Responsive Interface
+
+Sentinel uses a structured, calm interface intended to make complex information easier to scan and understand.
+
+## How It Works
+
+```text
+Individual observations
+          ↓
+       Signals
+          ↓
+Related signals + source context
+          ↓
+Verification states
+          ↓
+      Situations
+          ↓
+Timeline + evidence + summary
+```
+
+The application separates individual observations from the broader situation they may contribute to.
+
+## Technology
+
+Sentinel is built with:
+
+* **Next.js 16**
+* **React 19**
+* **TypeScript**
+* **Tailwind CSS**
+* **shadcn/ui**
+* **Lucide React**
+* **Vercel Analytics**
+
+## Repository Structure
+
+```text
+Sentinel/
+├── app/
+│   ├── globals.css
+│   ├── layout.tsx
+│   └── page.tsx
+│
+├── components/
+│   ├── sentinel-app.tsx
+│   └── ui/
+│
+├── lib/
+│   └── utils.ts
+│
+├── public/
+│   ├── apple-icon.png
+│   ├── icon-dark-32x32.png
+│   ├── icon-light-32x32.png
+│   ├── icon.svg
+│   └── ...
+│
+├── .gitignore
+├── components.json
+├── next.config.mjs
+├── package.json
+├── pnpm-lock.yaml
+├── pnpm-workspace.yaml
+├── postcss.config.mjs
+└── tsconfig.json
+```
+
+### Main Application
+
+`components/sentinel-app.tsx` contains the primary Sentinel application interface and its current signal, situation, verification, evidence, and timeline models.
+
+`app/page.tsx` serves the Sentinel application as the main page.
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+* Node.js
+* pnpm 12+
+
+## Install Dependencies
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm install
+```
+
+## Run the Development Server
+
+```bash
 pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000 in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Build for Production
 
-## Learn More
+```bash
+pnpm build
+```
 
-To learn more, take a look at the following resources:
+### Start the Production Server
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-- [v0 Documentation](https://v0.app/docs) - learn about v0 and how to use it.
+```bash
+pnpm start
+```
+
+-Deployment
+
+Sentinel is deployed as a Next.js application.
+
+"Live application:"
+https://trust-radar-platform-development.vercel.app
+
+## Project Status
+
+The current repository contains the working Sentinel interface and its modeled signal and situation experience.
+
+The repository intentionally documents the functionality that is currently present rather than claiming backend services or integrations that are not included in this version.
+
+ Screenshots & Demo
+
+Screenshots and a demonstration walkthrough can be added here.
+
+Suggested screenshots:
+
+1. Sentinel signal overview
+2. Situation details
+3. Verification trail
+4. Timeline and evidence
+
+## Contributor
+
+"Nimona Gelana"
+Software Developer
+
+GitHub: https://github.com/nimonagelana
+
+## License
+
+No open-source license is currently specified for this repository.
